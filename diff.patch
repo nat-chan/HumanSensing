@@ -1,0 +1,63 @@
+23,24c23,24
+< 	/* 距離画像を使用できるよう記述を追加する */
+< 	ERROR_CHECK(kinect->NuiInitialize(NUI_INITIALIZE_FLAG_USES_COLOR));
+---
+> 	/* 距離画像を使用できるよう記述を追加する DONE*/
+> 	ERROR_CHECK(kinect->NuiInitialize(NUI_INITIALIZE_FLAG_USES_COLOR | NUI_INITIALIZE_FLAG_USES_DEPTH_AND_PLAYER_INDEX));
+26,28c26,28
+< 	//RGB初期化
+< 	ERROR_CHECK(kinect->NuiImageStreamOpen(
+< 		NUI_IMAGE_TYPE_COLOR,CAMERA_RESOLUTION,0,2,0,&imageStreamHandle));
+---
+> 	//RGB初期化 DONE Depthを使うときはこちらをコメントアウトするとfpsがよくなる
+> //	ERROR_CHECK(kinect->NuiImageStreamOpen(
+> //		NUI_IMAGE_TYPE_COLOR,CAMERA_RESOLUTION,0,2,0,&imageStreamHandle));
+31c31,33
+< 	/* 処理を記述 */
+---
+> 	/* 処理を記述 DONE*/
+> 	ERROR_CHECK(kinect->NuiImageStreamOpen(
+> 		NUI_IMAGE_TYPE_DEPTH_AND_PLAYER_INDEX,CAMERA_RESOLUTION,0,2,0,&depthStreamHandle));
+34c36,38
+< 	//Nearモードを使用するには、Nearモードのフラグをここに設定する
+---
+> 	//Nearモードを使用するには、Nearモードのフラグをここに設定する DONE
+> 	ERROR_CHECK(kinect->NuiImageStreamSetImageFrameFlags(
+> 		depthStreamHandle,NUI_IMAGE_STREAM_FLAG_ENABLE_NEAR_MODE));
+52,53c56,57
+< 		this->setRgbImage(this->rgbIm);
+< 		cv::imshow("RGB Image",this->rgbIm);
+---
+> //		this->setRgbImage(this->rgbIm);
+> //		cv::imshow("RGB Image",this->rgbIm);
+56c60,62
+< 		/* 処理を記述 */
+---
+> 		/* 処理を記述 DONE*/
+> 		this->setDepthImage(this->depthIm);
+> 		cv::imshow("Depth Image",this->depthIm);
+109c115,118
+< 	/* 処理を記述 */
+---
+> 	/* 処理を記述 DONE*/
+> 	NUI_IMAGE_FRAME depthFrame = {0};
+> 	ERROR_CHECK(kinect->NuiImageStreamGetNextFrame(
+> 		depthStreamHandle,0,&depthFrame));
+114c123,124
+< 	/* 処理を記述 */
+---
+> 	/* 処理を記述 DONE*/
+> 	depthFrame.pFrameTexture->LockRect(0,&depthData,0,0);
+118c128,131
+< 	/* 処理を記述 */
+---
+> 	/* 処理を記述 DONE*/
+> 	//13bit幅の上位8bitを取りたいので5bit右シフトする
+> 	cv::Mat(height,width,CV_16U,depth).convertTo(image,CV_8U,1/32.0);
+> 	
+125c138,140
+< 	/* 処理を記述 */
+---
+> 	/* 処理を記述 DONE*/
+> 	ERROR_CHECK(kinect->NuiImageStreamReleaseFrame(
+> 			depthStreamHandle, &depthFrame));

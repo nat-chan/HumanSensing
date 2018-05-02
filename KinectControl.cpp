@@ -58,9 +58,11 @@ void KinectControl::run()
 
 		//距離画像取得と表示またはユーザーインデックスの表示
 		/* 処理を記述 DONE*/
-		this->setDepthImage(this->depthIm);
-		cv::imshow("Depth Image",this->depthIm);
+//		this->setDepthImage(this->depthIm);
+//		cv::imshow("Depth Image",this->depthIm);
 
+		this->setPlayerIndex(this->playerIm);
+		cv::imshow("Player Image",this->playerIm);
 
 		//キーウェイト
 		int key = cv::waitKey(10);
@@ -140,22 +142,31 @@ void KinectControl::setDepthImage(cv::Mat& image)
 			depthStreamHandle, &depthFrame));
 }
 
-void KinectControl::setPlayerIndex(cv::Mat& image, USHORT* depth)
-{
+void KinectControl::setPlayerIndex(cv::Mat& image) {
 	//depth: 全画素のデプスデータ（距離値+人物情報）
 
+	NUI_IMAGE_FRAME depthFrame = {0};
+	ERROR_CHECK(kinect->NuiImageStreamGetNextFrame(
+		depthStreamHandle,0,&depthFrame));
+
+	NUI_LOCKED_RECT depthData = {0};
+	/* 処理を記述 DONE*/
+	depthFrame.pFrameTexture->LockRect(0,&depthData,0,0);
+
+	USHORT* depth = (USHORT*)depthData.pBits;
+	
 	//ユーザーインデックス画像の準備(image変数の初期化)
 	//OpenCVのcv::Mat::zeros参考ください (http://opencv.jp/cookbook/opencv_mat.html)
+	image = cv::Mat::zeros(height, width, CV_8U);
 	/* 処理を記述 */
 
 
 	int i = 0; //depthに画素ごとのインデックス
 	int y = 0;
 	int x = 0;
-	for (y=0; y<this->height; y++)
-	{
-		for (x=0; x<this->width; x++)
-		{
+	for (y=0; y<this->height; y++) {
+		for (x=0; x<this->width; x++) {
+			i = width*y + x;
 			//NuiDepthPixelToDepthとNuiDepthPixelToPlayerIndex使うと距離データとユーザーインデックスが取得できる
 
 			USHORT distance = NuiDepthPixelToDepth(depth[i]);
@@ -167,6 +178,7 @@ void KinectControl::setPlayerIndex(cv::Mat& image, USHORT* depth)
 			kinect->NuiImageGetColorPixelCoordinatesFromDepthPixelAtResolution(CAMERA_RESOLUTION, CAMERA_RESOLUTION, 
 				0, x, y, depth[i], &colorX, &colorY);
 
+			if (player != 0) image.at<UCHAR>(colorY, colorX) = 100*player;
 			//ここまでで点(colorX,colorY)における距離値と人物情報が得られたことになる．
 			//以下省略
 			//例えばif文により人物領域のみに色付けやカラー画像の画素値を割り当てたりする．
@@ -175,4 +187,7 @@ void KinectControl::setPlayerIndex(cv::Mat& image, USHORT* depth)
 			/* 処理を記述 */
 		}
 	}
+
+	ERROR_CHECK(kinect->NuiImageStreamReleaseFrame(
+			depthStreamHandle, &depthFrame));
 }

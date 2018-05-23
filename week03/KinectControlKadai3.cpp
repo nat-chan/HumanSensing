@@ -1,14 +1,12 @@
 #include "KinectControlKadai3.h"
 
 
-KinectControl::KinectControl()
-{
+KinectControl::KinectControl(){
 	skeleton.eTrackingState = NUI_SKELETON_NOT_TRACKED; //DONE
 	processFlag = PROCESS_NONE;
 }
 
-KinectControl::~KinectControl()
-{
+KinectControl::~KinectControl(){
 	//終了処理
 	if(kinect != 0){
 		kinect->NuiShutdown();
@@ -17,8 +15,7 @@ KinectControl::~KinectControl()
 }
 
 
-void KinectControl::initialize()
-{
+void KinectControl::initialize(){
 	createInstance();
 
 	//Kinectの初期設定
@@ -36,8 +33,7 @@ void KinectControl::initialize()
 	ERROR_CHECK(kinect->NuiImageStreamSetImageFrameFlags(depthStreamHandle, NUI_IMAGE_STREAM_FLAG_ENABLE_NEAR_MODE));
 
 	//skeleton初期化
-	ERROR_CHECK(kinect->NuiSkeletonTrackingEnable(0,NUI_SKELETON_TRACKING_FLAG_ENABLE_IN_NEAR_RANGE | NUI_SKELETON_TRACKING_FLAG_ENABLE_SEATED_SUPPORT));
-		
+	ERROR_CHECK(kinect->NuiSkeletonTrackingEnable(0,NUI_SKELETON_TRACKING_FLAG_ENABLE_IN_NEAR_RANGE /*| NUI_SKELETON_TRACKING_FLAG_ENABLE_SEATED_SUPPORT*/));
 
 	//フレーム更新イベントの作成
 	streamEvent = ::CreateEventA(0,TRUE,FALSE,0);
@@ -46,8 +42,7 @@ void KinectControl::initialize()
 	::NuiImageResolutionToSize(CAMERA_RESOLUTION,width,height);
 }
 
-void KinectControl::run()
-{
+void KinectControl::run(){
 	//メインループ
 	while(1){
 		//更新待ち
@@ -66,10 +61,10 @@ void KinectControl::run()
 
 		//キーウェイト
 		int key = cv::waitKey(10);
-		if(key == 'q') {
+		if(key == 'q'){
 			break;
 		}
-		switch(key) {
+		switch(key){
 		case 'x':
 			//複数データを保存する前に、一枚データを保存してみましょう
 			//うまくできたら、case '1', '2', ...　に進んでください
@@ -116,8 +111,7 @@ void KinectControl::run()
 	}
 }
 
-void KinectControl::createInstance()
-{
+void KinectControl::createInstance(){
 	//Kinectの数を取得
 	int count = 0;
 	ERROR_CHECK(::NuiGetSensorCount(&count));
@@ -135,8 +129,7 @@ void KinectControl::createInstance()
 	}
 }
 
-void KinectControl::setRgbImage()
-{
+void KinectControl::setRgbImage(){
 	// RGBカメラのフレームデータを取得する
 	NUI_IMAGE_FRAME imageFrame = {0};
 	ERROR_CHECK(kinect->NuiImageStreamGetNextFrame(
@@ -155,8 +148,7 @@ void KinectControl::setRgbImage()
 		imageStreamHandle,&imageFrame));
 }
 
-void KinectControl::setDepthImage()
-{
+void KinectControl::setDepthImage(){
 	NUI_IMAGE_FRAME depthFrame = {0};
 	ERROR_CHECK(kinect->NuiImageStreamGetNextFrame(
 		depthStreamHandle, 0, &depthFrame));
@@ -179,23 +171,19 @@ void KinectControl::setDepthImage()
 		depthStreamHandle,&depthFrame));
 }
 
-void KinectControl::setPlayerIndex(USHORT* depth)
-{
+void KinectControl::setPlayerIndex(USHORT* depth){
 	playerIm = cv::Mat::zeros(height, width, CV_8UC1);
 	int i = 0;
-	int y = 0;
-	int x = 0;
-	for (y=0; y<height; y++)
-	{
-		for (x=0; x<width; x++)
-		{
+	for(int y=0; y<height; y++){
+		for(int x=0; x<width; x++){
 			USHORT distance = ::NuiDepthPixelToDepth(depth[i]);
 			USHORT player = ::NuiDepthPixelToPlayerIndex( depth[i] );
 
 			LONG colorX = 0;
 			LONG colorY = 0;
 			kinect->NuiImageGetColorPixelCoordinatesFromDepthPixelAtResolution(CAMERA_RESOLUTION, CAMERA_RESOLUTION, 0, x, y, depth[i], &colorX, &colorY);
-			if (player != 0) {
+
+			if(player != 0){
 				colorX = (colorX >= width) ? width-1 : (colorX<0 ? 0 : colorX);
 				colorY = (colorY >= height) ? height-1 : (colorY<0 ? 0 : colorY);
 				playerIm.at<UCHAR>(colorY,colorX) = 255;
@@ -205,23 +193,21 @@ void KinectControl::setPlayerIndex(USHORT* depth)
 	}
 }
 
-void KinectControl::setSkeletonImage()
-{
+void KinectControl::setSkeletonImage(){
 	NUI_SKELETON_FRAME skeletonFrame = {0};
 	kinect->NuiSkeletonGetNextFrame(0, &skeletonFrame);
 
 	skeletonIm = cv::Mat::zeros(height,width,CV_8UC3);
 	rgbIm.copyTo(skeletonIm,playerIm);
-	for (int i=0; i < NUI_SKELETON_COUNT; i++) {
-//		const NUI_SKELETON_DATA &skeleton = skeletonFrame.SkeletonData[i]; //DONE
+	for(int i=0; i < NUI_SKELETON_COUNT; i++){
+		skeleton = skeletonFrame.SkeletonData[i]; //DONE
  
-		switch (skeleton.eTrackingState)
-		{
+		switch(skeleton.eTrackingState){
 		case NUI_SKELETON_TRACKED: //詳細スケルトンデータを得られる
 			drawTrackedSkeleton(skeletonIm, skeleton);
 //			trackedSkeleton = skeleton; //DONE
 			break;
- 
+
 		case NUI_SKELETON_POSITION_ONLY: //重心だけ
 			drawPoint(skeletonIm, skeleton.Position);
 			break;
@@ -230,8 +216,7 @@ void KinectControl::setSkeletonImage()
 	}
 }
 
-void KinectControl::drawTrackedSkeleton(cv::Mat& image, const NUI_SKELETON_DATA& skeleton)
-{
+void KinectControl::drawTrackedSkeleton(cv::Mat& image, const NUI_SKELETON_DATA& skeleton){
 	// 胴体
 	drawBone(image, skeleton, NUI_SKELETON_POSITION_HEAD, NUI_SKELETON_POSITION_SHOULDER_CENTER);
 	drawBone(image, skeleton, NUI_SKELETON_POSITION_SHOULDER_CENTER, NUI_SKELETON_POSITION_SHOULDER_LEFT);
@@ -239,28 +224,74 @@ void KinectControl::drawTrackedSkeleton(cv::Mat& image, const NUI_SKELETON_DATA&
 	drawBone(image, skeleton, NUI_SKELETON_POSITION_SHOULDER_CENTER, NUI_SKELETON_POSITION_SPINE);
 	drawBone(image, skeleton, NUI_SKELETON_POSITION_SPINE, NUI_SKELETON_POSITION_HIP_CENTER);
 
-	// 腕や足などの描画
-	// .........
-	// .........
+/*
+	//顔から首
+	HEAD            SHOULDER_CENTER
+
+	//左手方向
+	SHOULDER_CENTER SHOULDER_LEFT
+	SHOULDER_LEFT   ELBOW_LEFT
+	ELBOW_LEFT      WRIST_LEFT
+	WRIST_LEFT      HAND_LEFT
+
+	//右手方向
+	SHOULDER_CENTER SHOULDER_RIGHT
+	SHOULDER_RIGHT   ELBOW_RIGHT
+	ELBOW_RIGHT      WRIST_RIGHT
+	WRIST_RIGHT      HAND_RIGHT
+
+	//胴体
+	SHOULDER_CENTER SPINE
+	SPINE           HIP_CENTER
+
+	//左足方向
+	HIP_CENTER      HIP_LEFT
+	HIP_LEFT        KNEE_LEFT
+	KNEE_LEFT       ANKLE_LEFT
+	ANKLE_LEFT      FOOT_LEFT
+
+	//右足方向
+	HIP_CENTER      HIP_RIGHT
+	HIP_RIGHT        KNEE_RIGHT
+	KNEE_RIGHT       ANKLE_RIGHT
+	ANKLE_RIGHT      FOOT_RIGHT
+	*/
+
+	drawBone(image, skeleton, NUI_SKELETON_POSITION_HEAD           , NUI_SKELETON_POSITION_SHOULDER_CENTER);
+	drawBone(image, skeleton, NUI_SKELETON_POSITION_SHOULDER_CENTER, NUI_SKELETON_POSITION_SHOULDER_LEFT  );
+	drawBone(image, skeleton, NUI_SKELETON_POSITION_SHOULDER_LEFT  , NUI_SKELETON_POSITION_ELBOW_LEFT     );
+	drawBone(image, skeleton, NUI_SKELETON_POSITION_ELBOW_LEFT     , NUI_SKELETON_POSITION_WRIST_LEFT     );
+	drawBone(image, skeleton, NUI_SKELETON_POSITION_WRIST_LEFT     , NUI_SKELETON_POSITION_HAND_LEFT      );
+	drawBone(image, skeleton, NUI_SKELETON_POSITION_SHOULDER_CENTER, NUI_SKELETON_POSITION_SHOULDER_RIGHT );
+	drawBone(image, skeleton, NUI_SKELETON_POSITION_SHOULDER_RIGHT , NUI_SKELETON_POSITION_ELBOW_RIGHT    );
+	drawBone(image, skeleton, NUI_SKELETON_POSITION_ELBOW_RIGHT    , NUI_SKELETON_POSITION_WRIST_RIGHT    );
+	drawBone(image, skeleton, NUI_SKELETON_POSITION_WRIST_RIGHT    , NUI_SKELETON_POSITION_HAND_RIGHT     );
+	drawBone(image, skeleton, NUI_SKELETON_POSITION_SHOULDER_CENTER, NUI_SKELETON_POSITION_SPINE          );
+	drawBone(image, skeleton, NUI_SKELETON_POSITION_SPINE          , NUI_SKELETON_POSITION_HIP_CENTER     );
+	drawBone(image, skeleton, NUI_SKELETON_POSITION_HIP_CENTER     , NUI_SKELETON_POSITION_HIP_LEFT       );
+	drawBone(image, skeleton, NUI_SKELETON_POSITION_HIP_LEFT       , NUI_SKELETON_POSITION_KNEE_LEFT      );
+	drawBone(image, skeleton, NUI_SKELETON_POSITION_KNEE_LEFT      , NUI_SKELETON_POSITION_ANKLE_LEFT     );
+	drawBone(image, skeleton, NUI_SKELETON_POSITION_ANKLE_LEFT     , NUI_SKELETON_POSITION_FOOT_LEFT      );
+	drawBone(image, skeleton, NUI_SKELETON_POSITION_HIP_CENTER     , NUI_SKELETON_POSITION_HIP_RIGHT      );
+	drawBone(image, skeleton, NUI_SKELETON_POSITION_HIP_RIGHT      , NUI_SKELETON_POSITION_KNEE_RIGHT     );
+	drawBone(image, skeleton, NUI_SKELETON_POSITION_KNEE_RIGHT     , NUI_SKELETON_POSITION_ANKLE_RIGHT    );
+	drawBone(image, skeleton, NUI_SKELETON_POSITION_ANKLE_RIGHT    , NUI_SKELETON_POSITION_FOOT_RIGHT     );
 }
 
-void KinectControl::drawBone(cv::Mat& image, const NUI_SKELETON_DATA & skeleton, NUI_SKELETON_POSITION_INDEX jointFrom, NUI_SKELETON_POSITION_INDEX jointTo)
-{
+void KinectControl::drawBone(cv::Mat& image, const NUI_SKELETON_DATA & skeleton, NUI_SKELETON_POSITION_INDEX jointFrom, NUI_SKELETON_POSITION_INDEX jointTo){
 	NUI_SKELETON_POSITION_TRACKING_STATE jointFromState = skeleton.eSkeletonPositionTrackingState[jointFrom];
 	NUI_SKELETON_POSITION_TRACKING_STATE jointToState = skeleton.eSkeletonPositionTrackingState[jointTo];
 	
 	// 追跡されたポイントのみを描く
-	if ((jointFromState == NUI_SKELETON_POSITION_INFERRED || jointToState == NUI_SKELETON_POSITION_INFERRED) ||
-		(jointFromState == NUI_SKELETON_POSITION_TRACKED && jointToState == NUI_SKELETON_POSITION_TRACKED))
-	{
+	if((jointFromState == NUI_SKELETON_POSITION_INFERRED || jointToState == NUI_SKELETON_POSITION_INFERRED) ||
+	   (jointFromState == NUI_SKELETON_POSITION_TRACKED  && jointToState == NUI_SKELETON_POSITION_TRACKED ) ){
 		const Vector4 jointFromPosition = skeleton.SkeletonPositions[jointFrom];
 		const Vector4 jointToPosition = skeleton.SkeletonPositions[jointTo];
 		drawLine(image, jointFromPosition, jointToPosition);
 	}
 }
 
-void KinectControl::drawLine( cv::Mat& image, Vector4 pos1, Vector4 pos2)
-{
+void KinectControl::drawLine( cv::Mat& image, Vector4 pos1, Vector4 pos2){
 	// ３次元の位置から距離画像での位置に変換
 	FLOAT depthX1 = 0, depthY1 = 0;
 	FLOAT depthX2 = 0, depthY2 = 0;
@@ -280,9 +311,7 @@ void KinectControl::drawLine( cv::Mat& image, Vector4 pos1, Vector4 pos2)
 	cv::line(image, cv::Point(colorX1,colorY1), cv::Point(colorX2,colorY2), cv::Scalar(50,255,50), 5);
 }
 
-
-void KinectControl::drawPoint( cv::Mat& image, Vector4 position )
-{
+void KinectControl::drawPoint( cv::Mat& image, Vector4 position ){
 	// ３次元の位置から距離画像での位置に変換
 	FLOAT depthX = 0, depthY = 0;
 	NuiTransformSkeletonToDepthImage(position, &depthX, &depthY, CAMERA_RESOLUTION);

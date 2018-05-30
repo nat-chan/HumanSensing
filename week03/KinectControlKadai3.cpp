@@ -1,5 +1,5 @@
 #include "KinectControlKadai3.h"
-
+#include <stdio.h>
 
 KinectControl::KinectControl(){
 	skeleton.eTrackingState = NUI_SKELETON_NOT_TRACKED; //DONE
@@ -68,6 +68,10 @@ void KinectControl::run(){
 		case 'x':
 			//複数データを保存する前に、一枚データを保存してみましょう
 			//うまくできたら、case '1', '2', ...　に進んでください
+			printf("#\n");
+			for (int i = 0; i < 20; i++){
+				printf("%d, %d\n", skeleton.SkeletonPositions[i].x, skeleton.SkeletonPositions[i].y);
+			}
 			break;
 		case '1':
 			std::cout << "ポーズ1の辞書データの取得を開始する" << std::endl;
@@ -142,6 +146,13 @@ void KinectControl::setRgbImage(){
 	//画像コピー
 	rgbIm = cv::Mat(height,width,CV_8UC4,colorData.pBits);
 	cv::cvtColor(rgbIm,rgbIm,CV_BGRA2BGR);
+
+
+	char txt[256];
+	sprintf_s(txt, 256, "%d, %d", skeleton.SkeletonPositions[0].x, skeleton.SkeletonPositions[0].y);
+
+	cv::putText(rgbIm, txt, cv::Point(10,50), cv::FONT_HERSHEY_PLAIN, 2, cv::Scalar(0,255,0),2,CV_AA);
+	//                                     x,y         
 
 	//フレーム解放
 	ERROR_CHECK(kinect->NuiImageStreamReleaseFrame(

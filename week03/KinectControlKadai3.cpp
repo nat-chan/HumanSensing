@@ -42,7 +42,28 @@ void KinectControl::initialize(){
 	::NuiImageResolutionToSize(CAMERA_RESOLUTION,width,height);
 }
 
+struct mouseParam {
+	int x;
+	int y;
+	int event;
+	int flags;
+};
+
+void CallBackFunc(int eventType, int x, int y, int flags, void* userdata){
+	mouseParam *ptr = static_cast<mouseParam*> (userdata);
+
+	ptr->x = x;
+	ptr->y = y;
+	ptr->event = eventType;
+	ptr->flags = flags;
+}
+
+
 void KinectControl::run(){
+	bool flag_mouse[2] = { false, false };
+	mouseParam mouseEvent;
+	cv::namedWindow("Player", cv::WINDOW_NORMAL);
+	cv::setMouseCallback("Player", CallBackFunc, &mouseEvent);
 	//メインループ
 	while(1){
 		//更新待ち
@@ -59,6 +80,12 @@ void KinectControl::run(){
 		cv::imshow("Player",playerIm);
 		cv::imshow("Skeleton",skeletonIm);
 
+		//flagが立ち上がりを検出する
+		flag_mouse[1] = flag_mouse[0];
+		flag_mouse[0] = mouseEvent.event == cv::EVENT_LBUTTONDOWN;
+		if ((flag_mouse[0]^flag_mouse[1])&flag_mouse[0]) {
+			printf("%d, %d\n", mouseEvent.x, mouseEvent.y);
+		}
 		//キーウェイト
 		int key = cv::waitKey(10);
 		if(key == 'q'){
@@ -337,3 +364,5 @@ void KinectControl::drawPoint( cv::Mat& image, Vector4 position ){
 	// RGB画像での位置に丸を描画
 	cv::circle( image, cv::Point(colorX,colorY), 10, cv::Scalar( 0, 255, 0), 5);
 }
+
+

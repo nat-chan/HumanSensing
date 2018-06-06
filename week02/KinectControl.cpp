@@ -44,8 +44,7 @@ void KinectControl::initialize()
 	::NuiImageResolutionToSize(CAMERA_RESOLUTION,width,height);
 }
 
-void KinectControl::run()
-{
+void KinectControl::run(){
 	//メインループ
 	while(1){
 		//更新待ち

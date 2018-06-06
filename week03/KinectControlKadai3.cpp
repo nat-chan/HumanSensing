@@ -1,5 +1,6 @@
 #include "KinectControlKadai3.h"
 #include <stdio.h>
+#include <vector>
 
 KinectControl::KinectControl(){
 	skeleton.eTrackingState = NUI_SKELETON_NOT_TRACKED; //DONE
@@ -60,10 +61,21 @@ void CallBackFunc(int eventType, int x, int y, int flags, void* userdata){
 
 
 void KinectControl::run(){
-	bool flag_mouse[2] = { false, false };
+	std::vector<cv::Mat> dict;
+	bool flag_mouse_l[2] = { false, false };
+	bool flag_mouse_r[2] = { false, false };
 	mouseParam mouseEvent;
-	cv::namedWindow("Player", cv::WINDOW_NORMAL);
-	cv::setMouseCallback("Player", CallBackFunc, &mouseEvent);
+
+	cv::namedWindow("Skeleton", cv::WINDOW_NORMAL);
+	cv::moveWindow("Skeleton", 1*660, 0*540);
+	cv::setMouseCallback("Skeleton", CallBackFunc, &mouseEvent);
+//	HWND windowHandle = FindWindowA(NULL, "Skeleton");
+//	SetWindowLongPtr(windowHandle, GWL_STYLE, WS_BORDER);
+//	cv::setWindowProperty("Skeleton", CV_WND_PROP_FULLSCREEN, CV_WINDOW_FULLSCREEN);
+
+	cv::namedWindow("RGB Image", cv::WINDOW_NORMAL);
+	cv::moveWindow("RGB Image", 2*660, 0*540);
+
 	//メインループ
 	while(1){
 		//更新待ち
@@ -75,16 +87,50 @@ void KinectControl::run(){
 		setDepthImage();
 		setSkeletonImage();
 
-		cv::imshow("RGB Image",rgbIm);
-		cv::imshow("Depth",depthIm);
-		cv::imshow("Player",playerIm);
-		cv::imshow("Skeleton",skeletonIm);
+//		cv::imshow    ("Depth",depthIm);
+//		cv::imshow    ("Player",playerIm);
+		cv::imshow    ("RGB Image",rgbIm);
+
+		cv::imshow    ("Skeleton",skeletonIm);
 
 		//flagが立ち上がりを検出する
-		flag_mouse[1] = flag_mouse[0];
-		flag_mouse[0] = mouseEvent.event == cv::EVENT_LBUTTONDOWN;
-		if ((flag_mouse[0]^flag_mouse[1])&flag_mouse[0]) {
-			printf("%d, %d\n", mouseEvent.x, mouseEvent.y);
+		flag_mouse_l[1] = flag_mouse_l[0];
+		flag_mouse_l[0] = mouseEvent.event == cv::EVENT_LBUTTONDOWN;
+		flag_mouse_r[1] = flag_mouse_r[0];
+		flag_mouse_r[0] = mouseEvent.event == cv::EVENT_RBUTTONDOWN;
+
+		if ((flag_mouse_l[0]^flag_mouse_l[1])&flag_mouse_l[0]) {
+			printf("左クリック\n");
+			cv::Mat skeleton1 = cv::Mat::zeros(3 * 20, 1, CV_32F);
+			for (int i = 0; i < 20; i++){
+				printf("%d, %d, %d\n", skeleton.SkeletonPositions[i].x,
+				                       skeleton.SkeletonPositions[i].y,
+				                       skeleton.SkeletonPositions[i].z);
+				skeleton1.at<FLOAT>(i * 3 + 0) = skeleton.SkeletonPositions[i].x;
+				skeleton1.at<FLOAT>(i * 3 + 1) = skeleton.SkeletonPositions[i].y;
+				skeleton1.at<FLOAT>(i * 3 + 2) = skeleton.SkeletonPositions[i].z;
+			}
+			dict.push_back(skeleton1);
+
+			char title[256];
+			sprintf_s(title, 256, "dict[%d]", dict.size() - 1 );
+			cv::imshow(title, skeletonIm);
+			
+		}
+
+		if ((flag_mouse_r[0]^flag_mouse_r[1])&flag_mouse_r[0]) {
+			printf("右クリック\n");
+			cv::Mat skeleton1 = cv::Mat::zeros(3 * 20, 1, CV_32F);
+			for (int i = 0; i < 20; i++){
+				skeleton1.at<FLOAT>(i * 3 + 0) = skeleton.SkeletonPositions[i].x;
+				skeleton1.at<FLOAT>(i * 3 + 1) = skeleton.SkeletonPositions[i].y;
+				skeleton1.at<FLOAT>(i * 3 + 2) = skeleton.SkeletonPositions[i].z;
+			}
+
+			for (int i = 0; i < dict.size(); i++){
+				double d = cv::norm(dict[i], skeleton1);
+				printf("[%d] = %lf\n", i, d);
+			}
 		}
 		//キーウェイト
 		int key = cv::waitKey(10);
@@ -190,20 +236,20 @@ void KinectControl::setDepthImage(){
 	NUI_IMAGE_FRAME depthFrame = {0};
 	ERROR_CHECK(kinect->NuiImageStreamGetNextFrame(
 		depthStreamHandle, 0, &depthFrame));
-	
+
 	//距離画像取得
 	NUI_LOCKED_RECT depthData = {0};
 	depthFrame.pFrameTexture->LockRect(0, &depthData, 0, 0);
 
 	USHORT* depth = (USHORT*)depthData.pBits;
-	
+
 	depthIm = cv::Mat(height, width, CV_16UC1, depth);
 	double minVal, maxVal;
 	cv::minMaxIdx(depthIm, &minVal, &maxVal);
 	depthIm.convertTo(depthIm, CV_8UC1, 255.0/maxVal - minVal);	
 
 	setPlayerIndex(depth);
-
+	
 	//フレーム解放
 	ERROR_CHECK(kinect->NuiImageStreamReleaseFrame(
 		depthStreamHandle,&depthFrame));
@@ -319,7 +365,7 @@ void KinectControl::drawTrackedSkeleton(cv::Mat& image, const NUI_SKELETON_DATA&
 void KinectControl::drawBone(cv::Mat& image, const NUI_SKELETON_DATA & skeleton, NUI_SKELETON_POSITION_INDEX jointFrom, NUI_SKELETON_POSITION_INDEX jointTo){
 	NUI_SKELETON_POSITION_TRACKING_STATE jointFromState = skeleton.eSkeletonPositionTrackingState[jointFrom];
 	NUI_SKELETON_POSITION_TRACKING_STATE jointToState = skeleton.eSkeletonPositionTrackingState[jointTo];
-	
+
 	// 追跡されたポイントのみを描く
 	if((jointFromState == NUI_SKELETON_POSITION_INFERRED || jointToState == NUI_SKELETON_POSITION_INFERRED) ||
 	   (jointFromState == NUI_SKELETON_POSITION_TRACKED  && jointToState == NUI_SKELETON_POSITION_TRACKED ) ){
@@ -344,7 +390,7 @@ void KinectControl::drawLine( cv::Mat& image, Vector4 pos1, Vector4 pos2){
 		CAMERA_RESOLUTION, CAMERA_RESOLUTION, 0, (LONG)depthX1, (LONG)depthY1, 0, &colorX1, &colorY1 );
 	kinect->NuiImageGetColorPixelCoordinatesFromDepthPixelAtResolution(
 		CAMERA_RESOLUTION, CAMERA_RESOLUTION, 0, (LONG)depthX2, (LONG)depthY2, 0, &colorX2, &colorY2 );
-	
+
 	// RGB画像での位置に線分を描画
 	cv::line(image, cv::Point(colorX1,colorY1), cv::Point(colorX2,colorY2), cv::Scalar(50,255,50), 5);
 }

@@ -62,6 +62,8 @@ void CallBackFunc(int eventType, int x, int y, int flags, void* userdata){
 
 void KinectControl::run(){
 	std::vector<cv::Mat> dict;
+	std::vector<NUI_SKELETON_DATA> skeletons;
+	std::vector<cv::Mat> imgs;
 	bool flag_mouse_l[2] = { false, false };
 	bool flag_mouse_r[2] = { false, false };
 	mouseParam mouseEvent;
@@ -93,45 +95,60 @@ void KinectControl::run(){
 
 		cv::imshow    ("Skeleton",skeletonIm);
 
-		//flagが立ち上がりを検出する
+		//flagの立ち上がりを検出する
 		flag_mouse_l[1] = flag_mouse_l[0];
 		flag_mouse_l[0] = mouseEvent.event == cv::EVENT_LBUTTONDOWN;
 		flag_mouse_r[1] = flag_mouse_r[0];
 		flag_mouse_r[0] = mouseEvent.event == cv::EVENT_RBUTTONDOWN;
 
+		cv::Mat skeleton1 = cv::Mat::zeros(3 * 20, 1, CV_32F);
+		for (int i = 0; i < 20; i++){
+			skeleton1.at<FLOAT>(i * 3 + 0) = skeleton.SkeletonPositions[i].x;
+			skeleton1.at<FLOAT>(i * 3 + 1) = skeleton.SkeletonPositions[i].y;
+			skeleton1.at<FLOAT>(i * 3 + 2) = skeleton.SkeletonPositions[i].z;
+		}
+
 		if ((flag_mouse_l[0]^flag_mouse_l[1])&flag_mouse_l[0]) {
 			printf("左クリック\n");
-			cv::Mat skeleton1 = cv::Mat::zeros(3 * 20, 1, CV_32F);
-			for (int i = 0; i < 20; i++){
-				printf("%d, %d, %d\n", skeleton.SkeletonPositions[i].x,
-				                       skeleton.SkeletonPositions[i].y,
-				                       skeleton.SkeletonPositions[i].z);
-				skeleton1.at<FLOAT>(i * 3 + 0) = skeleton.SkeletonPositions[i].x;
-				skeleton1.at<FLOAT>(i * 3 + 1) = skeleton.SkeletonPositions[i].y;
-				skeleton1.at<FLOAT>(i * 3 + 2) = skeleton.SkeletonPositions[i].z;
-			}
 			dict.push_back(skeleton1);
+			skeletons.push_back(skeleton);
+			imgs.push_back(skeletonIm.clone());
 
-			char title[256];
-			sprintf_s(title, 256, "dict[%d]", dict.size() - 1 );
-			cv::imshow(title, skeletonIm);
+//			char title[256];
+//			sprintf_s(title, 256, "dict[%d]", dict.size() - 1 );
+//			cv::imshow(title, skeletonIm);
 			
 		}
 
 		if ((flag_mouse_r[0]^flag_mouse_r[1])&flag_mouse_r[0]) {
 			printf("右クリック\n");
-			cv::Mat skeleton1 = cv::Mat::zeros(3 * 20, 1, CV_32F);
-			for (int i = 0; i < 20; i++){
-				skeleton1.at<FLOAT>(i * 3 + 0) = skeleton.SkeletonPositions[i].x;
-				skeleton1.at<FLOAT>(i * 3 + 1) = skeleton.SkeletonPositions[i].y;
-				skeleton1.at<FLOAT>(i * 3 + 2) = skeleton.SkeletonPositions[i].z;
-			}
-
 			for (int i = 0; i < dict.size(); i++){
 				double d = cv::norm(dict[i], skeleton1);
 				printf("[%d] = %lf\n", i, d);
 			}
 		}
+
+		//スナップ写真の描画処理
+		for (int i = 0; i < dict.size(); i++){
+			double d = cv::norm(dict[i], skeleton1);
+//			printf("[%d] = %lf\n", i, d);
+			char buf[256];
+
+			sprintf_s(buf, 256, "%lf", d);
+
+			cv::Mat tmp = imgs[i].clone();
+			cv::putText(tmp, buf, cv::Point(10,50), cv::FONT_HERSHEY_PLAIN, 2, cv::Scalar(0,255,0),2,CV_AA);
+
+			sprintf_s(buf, 256, "dict[%d]", i);
+			cv::imshow(buf, tmp);
+		}
+
+//		for (int i = 0; i < dict.size(); i++){
+//			double d = cv::norm(dict[i], skeleton1);
+//			printf("[%d] = %lf\n", i, d);
+//		}
+
+
 		//キーウェイト
 		int key = cv::waitKey(10);
 		if(key == 'q'){
@@ -219,13 +236,6 @@ void KinectControl::setRgbImage(){
 	//画像コピー
 	rgbIm = cv::Mat(height,width,CV_8UC4,colorData.pBits);
 	cv::cvtColor(rgbIm,rgbIm,CV_BGRA2BGR);
-
-
-	char txt[256];
-	sprintf_s(txt, 256, "%d, %d", skeleton.SkeletonPositions[0].x, skeleton.SkeletonPositions[0].y);
-
-	cv::putText(rgbIm, txt, cv::Point(10,50), cv::FONT_HERSHEY_PLAIN, 2, cv::Scalar(0,255,0),2,CV_AA);
-	//                                     x,y         
 
 	//フレーム解放
 	ERROR_CHECK(kinect->NuiImageStreamReleaseFrame(

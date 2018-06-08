@@ -64,6 +64,7 @@ void KinectControl::run(){
 	std::vector<cv::Mat> dict;
 	std::vector<NUI_SKELETON_DATA> skeletons;
 	std::vector<cv::Mat> imgs;
+	std::vector<double> norms;
 	bool flag_mouse_l[2] = { false, false };
 	bool flag_mouse_r[2] = { false, false };
 	mouseParam mouseEvent;
@@ -113,31 +114,34 @@ void KinectControl::run(){
 			dict.push_back(skeleton1);
 			skeletons.push_back(skeleton);
 			imgs.push_back(skeletonIm.clone());
+			norms.push_back(0);
 
-//			char title[256];
-//			sprintf_s(title, 256, "dict[%d]", dict.size() - 1 );
-//			cv::imshow(title, skeletonIm);
 			
 		}
 
 		if ((flag_mouse_r[0]^flag_mouse_r[1])&flag_mouse_r[0]) {
 			printf("右クリック\n");
-			for (int i = 0; i < dict.size(); i++){
-				double d = cv::norm(dict[i], skeleton1);
-				printf("[%d] = %lf\n", i, d);
-			}
+		}
+
+		double m = 100;
+		for (int i = 0; i < dict.size(); i++){
+			norms[i] = cv::norm(dict[i], skeleton1);
+			if (norms[i] < m) m = norms[i];
 		}
 
 		//スナップ写真の描画処理
 		for (int i = 0; i < dict.size(); i++){
-			double d = cv::norm(dict[i], skeleton1);
-//			printf("[%d] = %lf\n", i, d);
 			char buf[256];
 
-			sprintf_s(buf, 256, "%lf", d);
+			sprintf_s(buf, 256, "%lf", norms[i]);
 
 			cv::Mat tmp = imgs[i].clone();
-			cv::putText(tmp, buf, cv::Point(10,50), cv::FONT_HERSHEY_PLAIN, 2, cv::Scalar(0,255,0),2,CV_AA);
+			if (norms[i] == m){
+				cv::putText(tmp, buf, cv::Point(10, 50), cv::FONT_HERSHEY_PLAIN, 2, cv::Scalar(0, 0, 255), 2, CV_AA);
+			}
+			else{
+				cv::putText(tmp, buf, cv::Point(10, 50), cv::FONT_HERSHEY_PLAIN, 2, cv::Scalar(0, 255, 0), 2, CV_AA);
+			}
 
 			sprintf_s(buf, 256, "dict[%d]", i);
 			cv::imshow(buf, tmp);

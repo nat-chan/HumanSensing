@@ -12,3 +12,5 @@ Kinect、主成分分析、部分空間法
 ## 後半
 
 GANと協調してイラスト生成
+
+[OneNote手書きメモ](https://1drv.ms/f/s!Al3EgqONf8qnpifv8IKpid36YsYl)

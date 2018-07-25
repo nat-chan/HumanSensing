@@ -10,7 +10,8 @@ Kinect、主成分分析、部分空間法
 ./face_data/face_dataを./face_dataに移動させると動く
 
 ## 後半
+NNで手書き文字認識、CNNで顔の識別
+[GANと協調して生成モデルの推論](https://github.com/nat-chan/my-chainer-gan)
 
-GANと協調してイラスト生成
 
 [OneNote手書きメモ](https://1drv.ms/f/s!Al3EgqONf8qnpifv8IKpid36YsYl)

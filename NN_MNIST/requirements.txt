@@ -1,0 +1,5 @@
+chainer==4.3.0
+cupy==4.3.0
+matplotlib==2.2.2
+numpy==1.15.0
+Pillow==5.2.0

@@ -26,3 +26,6 @@
 *.out
 *.snm
 *.toc
+
+# jupyter notebookのテンポラリファイル
+*.ipynb_checkpoints/

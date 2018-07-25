@@ -1,0 +1,58 @@
+\documentclass[dvipdfmx,12pt]{beamer}
+
+\usepackage{bxdpx-beamer}% dvipdfmxなので必要
+\usepackage{pxjahyper}% 日本語で'しおり'したい
+\usepackage{minijs}% min10ヤダ
+\renewcommand{\kanjifamilydefault}{\gtdefault}% 既定をゴシック体に
+
+\usetheme[option]{PaloAlto}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsfonts}
+%\usepackage{euler}
+\usepackage{graphicx}
+\usepackage{color}
+\usepackage[cache=true]{minted}
+
+\logo{{\large$\mathbb{N}$}}
+\title[ヒューマンセンシング]{主専攻実験 最終報告会 \\ ヒューマンセンシング}
+\author[荻野夏樹]{情報科学類 201611353 \\ 荻野夏樹}
+\date{\today}
+\begin{document}
+\maketitle
+\section{section}
+\subsection{subsection}
+\begin{frame}
+	\frametitle{frame1}
+唐突な数式
+% \hyperlink{リンク先のラベル名}{\beamergotobutton{表示するテキスト}}
+\begin{eqnarray*}
+	log \prod D(x)(1-D(G(z))) &=& \sum log D(x)(1-D(G(z))) \\
+	                          &=& \sum log D(x) + log (1-D(G(z)))
+\end{eqnarray*}
+\pause
+\begin{eqnarray*}
+	\pi
+\end{eqnarray*}
+\end{frame}
+%\section{箇条書き}
+%\begin{frame}
+%\frametitle{箇条書き}
+%\begin{enumerate}
+%\item ああああ
+%\item いいいいい
+%\pause
+%\item ううううう
+%\pause
+%\item えええええ
+%\pause
+%\end{enumerate}
+%\end{frame}
+%\newpage
+%\begin{figure}[htbp]
+%\begin{center}
+%\includegraphics[width=7.0cm]{./di0.png}
+%\end{center}
+%\end{figure}
+\end{document}

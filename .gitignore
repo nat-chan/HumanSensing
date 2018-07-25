@@ -16,3 +16,13 @@
 
 # 階層にかかわらず特定の名前のディレクトリ
 *tmp/
+
+# tex のあれこれ
+*_minted-*/
+*.aux
+*.dvi
+*.log
+*.nav
+*.out
+*.snm
+*.toc

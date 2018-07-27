@@ -11,27 +11,35 @@
 				欠損画像の
 	スコアの説明
 
-実装を追っていきながらGANの解説
-	modelをvimで表示
-	層の結合を可視化する
+既存手法
+	実装を追っていきながらGANの解説
+		modelをvimで表示
+		decomvの解説
+		層の結合を可視化する
+	スコアの結果発表
+		lossが下がっていくグラフ
+		スコア
 
-スコアの結果発表
-	lossが下がっていくグラフ
-	スコア
-
-改善案:spectral normalization
-	その解説。
-
-GとDの変更点
-	diffをvimで表示
-	層の結合を可視化する
-
-スコアの結果発表
-	lossが下がっていくグラフ
-	スコア
+改善手法
+	改善案:spectral normalization
+		その解説。
+	GとDの変更点
+		diffをvimで表示
+		層の結合を可視化する
+	スコアの結果発表
+		lossが下がっていくグラフ
+		スコア
 
 まとめ
 	spectral normalizationでスコアを下げることに成功した
 	githubの草でいつ何をやっていたかを解説
 	chainerの勉強にNN_MNISTをやっていたことを紹介
+	sshポートフォーワーディングの紹介
 	リポジトリの提示
+
+バッチサイズ100iteration
+1epoch = 8バッチ=800iter
+total:128epoch
+
+dcgan mean std (1.5774693, 0.10291978)
+sndcgan mean std (1.5909373, 0.12718721)

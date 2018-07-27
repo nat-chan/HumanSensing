@@ -10,8 +10,7 @@
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{amsfonts}
-%\usepackage{euler}
-\usepackage{graphicx}
+%\usepackage{euler} \usepackage{graphicx}
 \usepackage{color}
 \usepackage[cache=true]{minted}
 
@@ -21,38 +20,281 @@
 \date{\today}
 \begin{document}
 \maketitle
-\section{section}
-\subsection{subsection}
+\section{目的}
+\subsection{使用したデータセット}
 \begin{frame}
-	\frametitle{frame1}
-唐突な数式
-% \hyperlink{リンク先のラベル名}{\beamergotobutton{表示するテキスト}}
-\begin{eqnarray*}
-	log \prod D(x)(1-D(G(z))) &=& \sum log D(x)(1-D(G(z))) \\
-	                          &=& \sum log D(x) + log (1-D(G(z)))
-\end{eqnarray*}
-\pause
-\begin{eqnarray*}
-	\pi
-\end{eqnarray*}
+	\frametitle{使用したデータセット:CelebA}
+	\begin{figure}[htbp]
+	\begin{center}
+	\includegraphics[width=0.7\hsize]{./SelebA_discription.png}
+	\end{center}
+	\end{figure}
+
+	\begin{enumerate}
+		\item 10,177人の異なる人物
+		\item 202,599 枚の画像
+		\item 5つ(目鼻口とか)の位置情報
+		\item その他眼鏡など40属性
+	\end{enumerate}
 \end{frame}
-%\section{箇条書き}
-%\begin{frame}
-%\frametitle{箇条書き}
-%\begin{enumerate}
-%\item ああああ
-%\item いいいいい
-%\pause
-%\item ううううう
-%\pause
-%\item えええええ
-%\pause
-%\end{enumerate}
-%\end{frame}
-%\newpage
-%\begin{figure}[htbp]
-%\begin{center}
-%\includegraphics[width=7.0cm]{./di0.png}
-%\end{center}
-%\end{figure}
+
+\subsection{実験の目的}
+\begin{frame}
+	\frametitle{実験の目的}
+	{\large GAN(敵対的生成ネットワーク)\\を用いて顔画像の生成モデルを推論し、\\精度(inception score)を高める}
+	\begin{enumerate}
+		\item Generator: 乱数から本物の画像に似せた画像を生成
+		\item Discriminator: Gの出力と本物の画像を判別する
+	\end{enumerate}
+	対立する２つのNNを交互に学習することで、切磋琢磨してくれることを期待する
+\end{frame}
+
+\subsection{なぜGAN}
+\begin{frame}
+	\frametitle{なぜGANに興味を持ったか}
+	\begin{figure}[htbp]
+	\begin{center}
+	\includegraphics[width=0.7\hsize]{./road_map.png}
+	\end{center}
+	\end{figure}
+	画像認識工学と機械学習
+\end{frame}
+
+\subsection{inception scoreとは}
+\begin{frame}
+	\frametitle{inception scoreとは}
+	\begin{figure}[htbp]
+	\begin{center}
+	\includegraphics[width=\hsize]{./inception_score_discription.png}
+	\end{center}
+	\end{figure}
+\end{frame}
+
+\subsection{目的関数}
+\begin{frame}
+	\frametitle{目的関数とミニバッチ学習}
+	\begin{figure}[htbp]
+	\begin{center}
+	\includegraphics[width=\hsize]{./mokuteki.png}
+	\end{center}
+	\end{figure}
+	\begin{figure}[htbp]
+	\begin{center}
+	\includegraphics[width=\hsize]{./gaku.png}
+	\end{center}
+	\end{figure}
+\end{frame}
+
+\section{実装}
+\subsection{学習}
+\begin{frame}
+	\frametitle{学習に3時間かかった}
+	\begin{figure}[htbp]
+	\begin{center}
+	\includegraphics[width=0.5\hsize]{./dcgan_D.png}
+	\includegraphics[width=0.5\hsize]{./dcgan_G.png}
+	\end{center}
+	\end{figure}
+	dcgan inseption score : 1.5774693
+\end{frame}
+\subsection{生成画像}
+%{{{
+\begin{frame}
+	\frametitle{10\%}
+	\begin{figure}[htbp]
+	\begin{center}
+	\includegraphics[width=0.7\hsize]{./dcgan/image00010000.png}
+	\end{center}
+	\end{figure}
+\end{frame}
+\begin{frame}
+	\frametitle{20\%}
+	\begin{figure}[htbp]
+	\begin{center}
+	\includegraphics[width=0.7\hsize]{./dcgan/image00020000.png}
+	\end{center}
+	\end{figure}
+\end{frame}
+\begin{frame}
+	\frametitle{30\%}
+	\begin{figure}[htbp]
+	\begin{center}
+	\includegraphics[width=0.7\hsize]{./dcgan/image00030000.png}
+	\end{center}
+	\end{figure}
+\end{frame}
+\begin{frame}
+	\frametitle{40\%}
+	\begin{figure}[htbp]
+	\begin{center}
+	\includegraphics[width=0.7\hsize]{./dcgan/image00040000.png}
+	\end{center}
+	\end{figure}
+\end{frame}
+\begin{frame}
+	\frametitle{50\%}
+	\begin{figure}[htbp]
+	\begin{center}
+	\includegraphics[width=0.7\hsize]{./dcgan/image00050000.png}
+	\end{center}
+	\end{figure}
+\end{frame}
+\begin{frame}
+	\frametitle{60\%}
+	\begin{figure}[htbp]
+	\begin{center}
+	\includegraphics[width=0.7\hsize]{./dcgan/image00060000.png}
+	\end{center}
+	\end{figure}
+\end{frame}
+\begin{frame}
+	\frametitle{70\%}
+	\begin{figure}[htbp]
+	\begin{center}
+	\includegraphics[width=0.7\hsize]{./dcgan/image00070000.png}
+	\end{center}
+	\end{figure}
+\end{frame}
+\begin{frame}
+	\frametitle{80\%}
+	\begin{figure}[htbp]
+	\begin{center}
+	\includegraphics[width=0.7\hsize]{./dcgan/image00080000.png}
+	\end{center}
+	\end{figure}
+\end{frame}
+\begin{frame}
+	\frametitle{90\%}
+	\begin{figure}[htbp]
+	\begin{center}
+	\includegraphics[width=0.7\hsize]{./dcgan/image00090000.png}
+	\end{center}
+	\end{figure}
+\end{frame}
+\begin{frame}
+	\frametitle{100\%}
+	\begin{figure}[htbp]
+	\begin{center}
+	\includegraphics[width=0.7\hsize]{./dcgan/image00100000.png}
+	\end{center}
+	\end{figure}
+\end{frame}
+%}}}
+
+\section{改善}
+\subsection{spectral normalization}
+\begin{frame}
+	\frametitle{spectral normalization}
+	\begin{figure}[htbp]
+	\begin{center}
+	\includegraphics[width=\hsize]{./spec_dis.png}
+	\end{center}
+	\end{figure}
+\end{frame}
+
+\subsection{学習}
+\begin{frame}
+	\frametitle{学習に4時間かかった}
+	\begin{figure}[htbp]
+	\begin{center}
+	\includegraphics[width=0.5\hsize]{./sndcgan_D.png}
+	\includegraphics[width=0.5\hsize]{./sndcgan_G.png}
+	\end{center}
+	\end{figure}
+	sndcgan inseption score : 1.5909373
+\end{frame}
+
+\subsection{生成画像}
+%{{{
+\begin{frame}
+	\frametitle{10\%}
+	\begin{figure}[htbp]
+	\begin{center}
+	\includegraphics[width=0.7\hsize]{./sndcgan/image00010000.png}
+	\end{center}
+	\end{figure}
+\end{frame}
+\begin{frame}
+	\frametitle{20\%}
+	\begin{figure}[htbp]
+	\begin{center}
+	\includegraphics[width=0.7\hsize]{./sndcgan/image00020000.png}
+	\end{center}
+	\end{figure}
+\end{frame}
+\begin{frame}
+	\frametitle{30\%}
+	\begin{figure}[htbp]
+	\begin{center}
+	\includegraphics[width=0.7\hsize]{./sndcgan/image00030000.png}
+	\end{center}
+	\end{figure}
+\end{frame}
+\begin{frame}
+	\frametitle{40\%}
+	\begin{figure}[htbp]
+	\begin{center}
+	\includegraphics[width=0.7\hsize]{./sndcgan/image00040000.png}
+	\end{center}
+	\end{figure}
+\end{frame}
+\begin{frame}
+	\frametitle{50\%}
+	\begin{figure}[htbp]
+	\begin{center}
+	\includegraphics[width=0.7\hsize]{./sndcgan/image00050000.png}
+	\end{center}
+	\end{figure}
+\end{frame}
+\begin{frame}
+	\frametitle{60\%}
+	\begin{figure}[htbp]
+	\begin{center}
+	\includegraphics[width=0.7\hsize]{./sndcgan/image00060000.png}
+	\end{center}
+	\end{figure}
+\end{frame}
+\begin{frame}
+	\frametitle{70\%}
+	\begin{figure}[htbp]
+	\begin{center}
+	\includegraphics[width=0.7\hsize]{./sndcgan/image00070000.png}
+	\end{center}
+	\end{figure}
+\end{frame}
+\begin{frame}
+	\frametitle{80\%}
+	\begin{figure}[htbp]
+	\begin{center}
+	\includegraphics[width=0.7\hsize]{./sndcgan/image00080000.png}
+	\end{center}
+	\end{figure}
+\end{frame}
+\begin{frame}
+	\frametitle{90\%}
+	\begin{figure}[htbp]
+	\begin{center}
+	\includegraphics[width=0.7\hsize]{./sndcgan/image00090000.png}
+	\end{center}
+	\end{figure}
+\end{frame}
+\begin{frame}
+	\frametitle{100\%}
+	\begin{figure}[htbp]
+	\begin{center}
+	\includegraphics[width=0.7\hsize]{./sndcgan/image00100000.png}
+	\end{center}
+	\end{figure}
+\end{frame}
+%}}}
+
+\section{結論}
+\begin{frame}
+	\frametitle{結論}
+	spectral normalizationでinception scoreを上げることに成功した。\\
+	画像の多様性も増したように見える。\\
+	twitter:mathbbN \\
+	github:nat-chan \\
+	ご静聴ありがとうございました
+\end{frame}
 \end{document}

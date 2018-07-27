@@ -11,7 +11,7 @@ Kinect、主成分分析、部分空間法
 
 ## 後半
 NNで手書き文字認識、CNNで顔の識別
-[GANと協調して生成モデルの推論](https://github.com/nat-chan/my-chainer-gan)
+[GANで顔の生成モデルの推論](https://github.com/nat-chan/my-chainer-gan)
 
 
 [OneNote手書きメモ](https://1drv.ms/f/s!Al3EgqONf8qnpifv8IKpid36YsYl)

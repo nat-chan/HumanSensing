@@ -6,6 +6,8 @@
 \renewcommand{\kanjifamilydefault}{\gtdefault}% 既定をゴシック体に
 
 \usetheme[option]{PaloAlto}
+\usepackage{url}
+\usepackage{hyperref}
 
 \usepackage{amsmath}
 \usepackage{amssymb}
@@ -292,9 +294,17 @@
 \begin{frame}
 	\frametitle{結論}
 	spectral normalizationでinception scoreを上げることに成功した。\\
-	画像の多様性も増したように見える。\\
-	twitter:mathbbN \\
-	github:nat-chan \\
-	ご静聴ありがとうございました
+	学習が安定し、画像の多様性も増したように見える。\\
+	github:
+	\textcolor{blue}{
+	\underline{
+	\href{https://github.com/nat-chan/my-chainer-gan}{nat-chan/my-chainer-gan}
+}}
+	\href{https://github.com/nat-chan/HumanSensing}{nat-chan/HumanSensing}
+	参考文献
+%	\begin{thebibliography{9}
+%		\bibitem{gan} Generative Adversarial Networks \url{https://arxiv.org/abs/1406.2661}
+%		\bibitem{dcgan} 文献情報
+%	\end{thebibliography}
 \end{frame}
 \end{document}
